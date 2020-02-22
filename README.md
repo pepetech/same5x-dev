@@ -7,7 +7,7 @@ Firmware development template for ATSAME5x microcontrollers from Atmel
 
 ### Instructions
 
-clone the repo
+clone the repo (recomended you fork the repo to your account first)
 ```
 git clone https://github.com/pepetech/same5x-dev
 ```
@@ -19,7 +19,7 @@ cd code same5x-dev/software
 
 ```
 
-The binaries will be located at `build/app.bin` and `build/app.elf`.
+The binaries will be located at `bin/APP_NAME.bin` and `bin/APP_NAME.elf`.
 
 if you're taking advantage of code you can use these shortcuts:
 ```
@@ -34,7 +34,7 @@ Otherwise you can
 make (Build)
 ```
 ```
-make clean (Clean and Build)
+make clean (Clean)
 ```
 
 ### Dependencies

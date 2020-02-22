@@ -1,30 +1,54 @@
-# App Config
-ARM_LIBROOT ?= /mnt/e/Projetos/ARM/ARMdev/lib/
-DEVICEDIR = $(ARM_LIBROOT)/Atmel.SAMV71_DFP.2.4.182/samv71b
-COREDIR = $(ARM_LIBROOT)/ARM.CMSIS.5.5.1/CMSIS
-MCU_TYPE = __SAMV71Q21B__
-APP_ADDRESS = 0x00000000
-APP_NAME = icyradio-dsp
+# [Directories] ------------------------------------------------------------------
+CMSISDIR = /opt/cmsis
+DEVICEDIR = $(CMSISDIR)/cmsis-dfp-same51/include
+COREDIR = $(CMSISDIR)/cmsis-core/CMSIS/Include
 
-# Multiprocessing
-MAX_PARALLEL =
-
-# Directories
 TARGETDIR = bin
 SOURCEDIR = src
+LINKERDIR = ld
 OBJECTDIR = bin/obj
 INCLUDEDIR = include
 
+# [App] -------------------------------------------------------------------------
+APP_NAME = same5x-app
+APP_ADDRESS = 0x00000000
+
+# [General] ----------------------------------------------------------------------
+MCU_TYPE = __ATSAME51J20A__
+
+LDSCRIPT = $(LINKERDIR)/atsame51j20.ld # Linker scripts
+
+BUILD_TYPE ?= debug # Build type
+
+MAX_PARALLEL = 10 # Parallel compile (use "$ nproc" to find out how many threads you have)
+
+# [Compiler/Linker] --------------------------------------------------------------
+CC = arm-none-eabi-gcc
+CXX = arm-none-eabi-g++
+LD = arm-none-eabi-gcc
+AS = arm-none-eabi-as
+STRIP = arm-none-eabi-strip
+OBJCOPY = arm-none-eabi-objcopy
+OBJDUMP = arm-none-eabi-objdump
+GDB = arm-none-eabi-gdb
+
+# [Flags] ------------------------------------------------------------------------
+ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+LDFLAGS = -mthumb -mcpu=cortex-m4	 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
+LDLIBS = -lm -lc -lgcc -lnosys
+LDLIBSPATH =
+
+# /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+# file search
 STRUCT := $(shell find $(SOURCEDIR) -type d)
 
 SOURCEDIRSTRUCT := $(filter-out %/include, $(STRUCT))
-INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/include $(COREDIR)/Include
+INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/ $(COREDIR)/
 OBJECTDIRSTRUCT := $(subst $(SOURCEDIR), $(OBJECTDIR), $(SOURCEDIRSTRUCT))
 
-# Build type
-BUILD_TYPE ?= debug
-
-# Version
+# Versioning
 $(shell if ! test -f $(TARGETDIR)/.version; then echo 0 > $(TARGETDIR)/.version; fi)
 
 INC_VERSION ?= n
@@ -43,31 +67,11 @@ $(shell rm -rf $(OBJECTDIR)/*)
 BUILD_VERSION = $(shell cat $(TARGETDIR)/.version)
 endif
 
-# Compillers & Linker
-CC = arm-none-eabi-gcc
-CXX = arm-none-eabi-g++
-LD = arm-none-eabi-gcc
-AS = arm-none-eabi-as
-STRIP = arm-none-eabi-strip
-OBJCOPY = arm-none-eabi-objcopy
-OBJDUMP = arm-none-eabi-objdump
-GDB = arm-none-eabi-gdb
-
-# Compillers & Linker flags
-ASFLAGS = -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
-CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-LDFLAGS = -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
-LDLIBS = -lm -lc -lgcc -lnosys -larm_cortexM7lfdp_math
-LDLIBSPATH = -L$(COREDIR)/DSP/Lib/GCC
-
+# flags
 ifeq ($(BUILD_TYPE), debug)
 CFLAGS += -g
 CXXFLAGS += -g
 endif
-
-## Linker scripts
-LDSCRIPT = ld/atsamxxxx21x_app.ld
 
 # Target
 TARGET = $(TARGETDIR)/v$(BUILD_VERSION).$(APP_NAME)
@@ -92,7 +96,7 @@ all: clean-bin make-dir version compile mem-usage
 
 compile:
 	@$(MAKE) INC_VERSION=n --no-print-directory -j${MAX_PARALLEL} $(TARGET).elf
-	@$(MAKE) INC_VERSION=n --no-print-directory -j${MAX_PARALLEL} $(TARGET).bin $(TARGET).hex $(TARGET).lss
+	@$(MAKE) INC_VERSION=n --nMCU_TYPEo-print-directory -j${MAX_PARALLEL} $(TARGET).bin $(TARGET).hex $(TARGET).lss
 
 $(TARGET).lss: $(TARGET).elf
 	@echo Creating LSS file \'$@\'...
