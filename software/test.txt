@@ -1,0 +1,1 @@
+CFLAGS = -Isrc/include -Isrc/printf/include -I/opt/cmsis/cmsis-dfp-same51/include/ -I/opt/cmsis/cmsis-core/CMSIS/Include/ -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D__ATSAME51J20A__ -DBUILD_VERSION=1 -g

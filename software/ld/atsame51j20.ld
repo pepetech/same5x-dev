@@ -7,10 +7,7 @@ _min_stack_size = 0x400;
 MEMORY
 {
     irom0  (rx)     : ORIGIN = 0x00000000, LENGTH = 0x00100000 /* flash code */
-    irom1  (rx)     : ORIGIN = 0x04000000, LENGTH = 0x01000000 /* qspi code */
-    drom0  (r)      : ORIGIN = 0x04000000, LENGTH = 0x01000000 /* qspi flash data */
     dram0  (rw)     : ORIGIN = 0x20000000, LENGTH = 0x00040000 /* ram data */
-    dram1  (rw)     : ORIGIN = 0x47000000, LENGTH = 0x00002000 /* backup ram data */
 }
 
 /* Initial stack pointer (must be 8 byte aligned) */
@@ -90,19 +87,6 @@ SECTIONS
         PROVIDE_HIDDEN(__fini_array_end = .);
     } > irom0
 
-    /* QSPI Code */
-    .irom1.text :
-    {
-        . = ALIGN(4);
-        _sirom1 = .;
-
-        *(.irom1.text)           /* .text sections (code) */
-        *(.irom1.text*)          /* .text* sections (code) */
-
-        . = ALIGN(4);
-        _eirom1 = .;
-    } > irom1
-
     /* RAM Data */
     _sidata = LOADADDR(.data);
 
@@ -117,32 +101,6 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end */
     } > dram0 AT > irom0
-
-    /* Backup RAM Data */
-    .dram1.data (NOLOAD) :
-    {
-        . = ALIGN(4);
-        _sdram1 = .;
-
-        *(.dram1.data)           /* .data sections */
-        *(.dram1.data*)          /* .data* sections */
-
-        . = ALIGN(4);
-        _edram1 = .;
-    } > dram1
-
-    /* QSPI Data */
-    .drom0.data:
-    {
-        . = ALIGN(4);
-        _sdrom0 = .;
-
-        *(.drom0.data)           /* .data sections */
-        *(.drom0.data*)          /* .data* sections */
-
-        . = ALIGN(4);
-        _edrom0 = .;
-    } > drom0
 
     /* BSS */
     .bss :

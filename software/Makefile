@@ -16,11 +16,14 @@ APP_ADDRESS = 0x00000000
 # [General] ----------------------------------------------------------------------
 MCU_TYPE = __ATSAME51J20A__
 
-LDSCRIPT = $(LINKERDIR)/atsame51j20.ld # Linker scripts
+# Linker scripts
+LDSCRIPT = $(LINKERDIR)/atsame51j20.ld
 
-BUILD_TYPE ?= debug # Build type
+# Build type
+BUILD_TYPE ?= debug
 
-MAX_PARALLEL = 10 # Parallel compile (use "$ nproc" to find out how many threads you have)
+# Parallel compile (use "$ nproc" to find out how many threads you have)
+MAX_PARALLEL = 10
 
 # [Compiler/Linker] --------------------------------------------------------------
 CC = arm-none-eabi-gcc
@@ -33,12 +36,7 @@ OBJDUMP = arm-none-eabi-objdump
 GDB = arm-none-eabi-gdb
 
 # [Flags] ------------------------------------------------------------------------
-ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
-CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-LDFLAGS = -mthumb -mcpu=cortex-m4	 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
-LDLIBS = -lm -lc -lgcc -lnosys
-LDLIBSPATH =
+
 
 # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 # file search
@@ -68,6 +66,13 @@ BUILD_VERSION = $(shell cat $(TARGETDIR)/.version)
 endif
 
 # flags
+ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
+LDLIBS = -lm -lc -lgcc -lnosys
+LDLIBSPATH =
+
 ifeq ($(BUILD_TYPE), debug)
 CFLAGS += -g
 CXXFLAGS += -g
@@ -96,7 +101,7 @@ all: clean-bin make-dir version compile mem-usage
 
 compile:
 	@$(MAKE) INC_VERSION=n --no-print-directory -j${MAX_PARALLEL} $(TARGET).elf
-	@$(MAKE) INC_VERSION=n --nMCU_TYPEo-print-directory -j${MAX_PARALLEL} $(TARGET).bin $(TARGET).hex $(TARGET).lss
+	@$(MAKE) INC_VERSION=n --no-print-directory -j${MAX_PARALLEL} $(TARGET).bin $(TARGET).hex $(TARGET).lss
 
 $(TARGET).lss: $(TARGET).elf
 	@echo Creating LSS file \'$@\'...

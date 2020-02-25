@@ -12,7 +12,7 @@
             "type": "cortex-debug",
             "preLaunchTask": "Build",
             "servertype": "jlink",
-            "device": "ATSAME51J20A",
+            "device": "ATSAME51J20",
             "svdFile": "/opt/cmsis/cmsis-dfp-same51/svd/ATSAME51J20A.svd",
             "interface": "swd",
             "swoConfig": {

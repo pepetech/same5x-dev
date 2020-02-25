@@ -27,7 +27,18 @@ void reset()
 }
 void sleep()
 {
-    // TODO:
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk; // Configure Deep Sleep (EM2/3)
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        __DMB(); // Wait for all memory transactions to finish before memory access
+        __DSB(); // Wait for all memory transactions to finish before executing instructions
+        __ISB(); // Wait for all memory transactions to finish before fetching instructions
+        __SEV(); // Set the event flag to ensure the next WFE will be a NOP
+        __WFE(); // NOP and clear the event flag
+        __WFE(); // Wait for event
+        __NOP(); // Prevent debugger crashes
+    }
 }
 
 uint32_t get_free_ram()
@@ -72,7 +83,7 @@ int main()
 
     for(;;)
     {
-
+        reset();
     }
 
     return 0;
