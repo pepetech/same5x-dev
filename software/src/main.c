@@ -5,6 +5,7 @@
 #include "gclk.h"
 #include "mclk.h"
 #include "dbg.h"
+#include "systick.h"
 #include "utils.h"
 #include "atomic.h"
 #include "rtsc.h"
@@ -90,6 +91,8 @@ int init()
     dbg_init(); // Init Debug module
     dbg_swo_config(BIT(0), 2000000); // Init SWO channel 0 at 6 MHz
 
+    systick_init();
+
     port_init();
 
     char szDeviceName[32];
@@ -97,6 +100,7 @@ int init()
     get_device_name(szDeviceName, 32);
 
     DBGPRINT("\n\n");
+
     DBGPRINTLN_CTX("same5x-app v%lu (%s %s)!", BUILD_VERSION, __DATE__, __TIME__);
     DBGPRINTLN_CTX("Device: %s", szDeviceName);
     DBGPRINTLN_CTX("Device Revision: %hhu", get_device_revision());
@@ -120,10 +124,11 @@ int init()
 }
 int main()
 {
+    DBGPRINTLN_CTX("OUT ptr: 0x%08X", (uint32_t)&(PORT->Group[0].DIRCLR.reg));
 
     for(;;)
     {
-
+        delay_ms(5000);
     }
 
     return 0;

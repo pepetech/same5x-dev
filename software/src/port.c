@@ -12,11 +12,16 @@ void port_init()
 
     /* PORT A */
     // direction
-    PORT->Group[0].DIRCLR.reg = 0xFFFFFFFF;  // inputs
+    *(volatile uint32_t*)(&(PORT->Group[0].DIRSET.reg)) = 0xFFFFFFFF;  // inputs
     PORT->Group[0].DIRSET.reg = BIT(26);  // outputs
     // output / pull select
     PORT->Group[0].OUTCLR.reg = 0xFFFFFFFF;  // output low / pull down
     PORT->Group[0].OUTSET.reg = BIT(26);  // output high / pull up
+
+    volatile uint32_t* ptr = &(PORT->Group[0].DIRSET.reg);
+    (*ptr) = 0xFFFFFFFF;
+    ptr = (uint32_t*)PORT->Group[0].OUTSET.reg;
+    (*ptr) = 0xFFFFFFFF;
 
     /* PORT B */
     // direction
