@@ -8,13 +8,14 @@ void _putchar(char ch)
 
 void dbg_init()
 {
-
+    GCLK->PCHCTRL[47].bit.GEN = 0x00;
+    GCLK->PCHCTRL[47].bit.CHEN = 1;
 }
 void dbg_swo_config(uint32_t ulChannelMask, uint32_t ulFrequency)
 {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     TPI->SPPR = 2 << TPI_SPPR_TXMODE_Pos;
-    TPI->ACPR = (48000000UL / ulFrequency) - 1;
+    TPI->ACPR = (GCLK_CLOCK_FREQ[0] / ulFrequency) - 1;
     TPI->FFCR = 0x00000100;
     DWT->CTRL = 0x400003FE;
     ITM->LAR = 0xC5ACCE55;

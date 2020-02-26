@@ -442,6 +442,7 @@
                 "__thumb__=1",
                 "__ATSAME51J20A__",
                 "__DEBUG_OUTPUT__",
+                "BUILD_VERSION",
                 "HFXO_VALUE=0UL",
                 "LFXO_VALUE = 32768UL"
             ],

@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "debug_macros.h"
+#include "gclk.h"
+#include "mclk.h"
 #include "dbg.h"
 #include "utils.h"
 #include "atomic.h"
 #include "rtsc.h"
+#include "port.h"
 
 // Structs
 
@@ -79,13 +82,39 @@ uint8_t get_device_revision()
 
 int init()
 {
+    gclk_init();
+    gclk_update_clocks();
+    mclk_init();
+    mclk_update_clocks();
+
     dbg_init(); // Init Debug module
     dbg_swo_config(BIT(0), 2000000); // Init SWO channel 0 at 6 MHz
 
-    static volatile uint8_t test = 0;
-    test = rstc_get_reset_reason();
+    port_init();
 
-    //DBGPRINTLN_CTX("RMU - Reset cause: %hhu", rstc_get_reset_reason());
+    char szDeviceName[32];
+
+    get_device_name(szDeviceName, 32);
+
+    DBGPRINT("\n\n");
+    DBGPRINTLN_CTX("same5x-app v%lu (%s %s)!", BUILD_VERSION, __DATE__, __TIME__);
+    DBGPRINTLN_CTX("Device: %s", szDeviceName);
+    DBGPRINTLN_CTX("Device Revision: %hhu", get_device_revision());
+    DBGPRINTLN_CTX("Free RAM: %lu KiB", get_free_ram() >> 10);
+
+    DBGPRINTLN_CTX("RSTC - Reset cause: 0x%02X", rstc_get_reset_reason());
+
+    for (uint8_t i = 0; i <= 11; i++)
+    {
+        DBGPRINTLN_CTX("GCLK - GCLK%hhu Clock: %.1f MHz", i, (float)GCLK_CLOCK_FREQ[i] / 1000000);
+    }
+    DBGPRINTLN_CTX("MCLK - HS APB Clock: %.1f MHz", (float)APB_HS_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("MCLK - CPU APB Clock: %.1f MHz", (float)APB_CPU_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("MCLK - CPU AHB Clock: %.1f MHz", (float)AHB_CPU_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("MCLK - CPU Clock: %.1f MHz", (float)CPU_CLOCK_FREQ / 1000000);
+
+
+
 
     return 0;
 }
@@ -94,7 +123,7 @@ int main()
 
     for(;;)
     {
-        reset();
+
     }
 
     return 0;

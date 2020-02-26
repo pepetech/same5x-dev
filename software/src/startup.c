@@ -48,7 +48,7 @@ void _reset_isr()
     src = &_sidata;
     dst = &_sdata;
 
-    while (dst < &_edata) // Copy data
+   while (dst < &_edata) // Copy data
         *(dst++) = *(src++);
 
     src = 0;
