@@ -18,7 +18,7 @@
             "swoConfig": {
                 "enabled": true,
                 "swoFrequency": 2000000,
-                "cpuFrequency": 36000000,
+                "cpuFrequency": 48000000,
                 "source": "probe",
                 "decoders": [
                     {

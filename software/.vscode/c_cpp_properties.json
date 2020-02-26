@@ -10,7 +10,7 @@
                 "/usr/arm-none-eabi/include/c++/9.2.1",
                 "/usr/arm-none-eabi/include/c++/9.2.1/backward",
                 "/opt/cmsis/cmsis-core/CMSIS/Include",
-                "/opt/cmsis/cmsis-dfp-same51/include"
+                "/opt/cmsis/cmsis-dfp-same51-new/include"
             ],
             "defines": [
                 "__ACCUM_EPSILON__=0x1P-15K",
@@ -440,7 +440,10 @@
                 "__has_include_next(STR)=__has_include_next__(STR)",
                 "__thumb2__=1",
                 "__thumb__=1",
-                "__ATSAME51J20A__"
+                "__ATSAME51J20A__",
+                "__DEBUG_OUTPUT__",
+                "HFXO_VALUE=0UL",
+                "LFXO_VALUE = 32768UL"
             ],
             "compilerPath": "/usr/bin/arm-none-eabi-gcc -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16",
             "cStandard": "c99",

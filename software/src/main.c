@@ -1,7 +1,11 @@
 #include <sam.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "debug_macros.h"
+#include "dbg.h"
+#include "utils.h"
 #include "atomic.h"
+#include "rtsc.h"
 
 // Structs
 
@@ -75,6 +79,13 @@ uint8_t get_device_revision()
 
 int init()
 {
+    dbg_init(); // Init Debug module
+    dbg_swo_config(BIT(0), 2000000); // Init SWO channel 0 at 6 MHz
+
+    static volatile uint8_t test = 0;
+    test = rstc_get_reset_reason();
+
+    //DBGPRINTLN_CTX("RMU - Reset cause: %hhu", rstc_get_reset_reason());
 
     return 0;
 }

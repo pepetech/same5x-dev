@@ -1,6 +1,6 @@
 # [Directories] ------------------------------------------------------------------
 CMSISDIR = /opt/cmsis
-DEVICEDIR = $(CMSISDIR)/cmsis-dfp-same51/include
+DEVICEDIR = $(CMSISDIR)/cmsis-dfp-same51-new/include
 COREDIR = $(CMSISDIR)/cmsis-core/CMSIS/Include
 
 TARGETDIR = bin
@@ -11,19 +11,23 @@ INCLUDEDIR = include
 
 # [App] -------------------------------------------------------------------------
 APP_NAME = same5x-app
+HFXO_VALUE = 0UL
+LFXO_VALUE = 32768UL
 APP_ADDRESS = 0x00000000
 
 # [General] ----------------------------------------------------------------------
 MCU_TYPE = __ATSAME51J20A__
 
-# Linker scripts
 LDSCRIPT = $(LINKERDIR)/atsame51j20.ld
 
-# Build type
+OPTIMIZATION = -O3
+
 BUILD_TYPE ?= debug
 
+DEBUG_OUTPUT ?= true
+
 # Parallel compile (use "$ nproc" to find out how many threads you have)
-MAX_PARALLEL = 10
+MAX_PARALLEL = 1
 
 # [Compiler/Linker] --------------------------------------------------------------
 CC = arm-none-eabi-gcc
@@ -65,17 +69,21 @@ $(shell rm -rf $(OBJECTDIR)/*)
 BUILD_VERSION = $(shell cat $(TARGETDIR)/.version)
 endif
 
-# flags
+# Compillers & Linker flags
 ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
-CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding $(OPTIMIZATION) -std=gnu99 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions $(OPTIMIZATION) -std=c++17 -Wpointer-arith -Wundef -Werror -D$(MCU_TYPE) -DHFXO_VALUE=$(HFXO_VALUE) -DLFXO_VALUE=$(LFXO_VALUE) -DBUILD_VERSION=$(BUILD_VERSION)
 LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
 LDLIBS = -lm -lc -lgcc -lnosys
-LDLIBSPATH =
 
 ifeq ($(BUILD_TYPE), debug)
 CFLAGS += -g
 CXXFLAGS += -g
+endif
+
+ifeq ($(DEBUG_OUTPUT), true)
+CFLAGS += -D__DEBUG_OUTPUT__
+CXXFLAGS += -D__DEBUG_OUTPUT__
 endif
 
 # Target
@@ -110,14 +118,12 @@ $(TARGET).lss: $(TARGET).elf
 $(TARGET).bin: $(TARGET).elf
 	@echo Creating BIN file \'$@\'...
 	@$(OBJCOPY) -O binary --only-section=.isr_vector --only-section=.text --only-section=.ARM --only-section=.iram0.text --only-section=.dram0.data --only-section=.data $< $(TARGET).irom0.bin
-	@$(OBJCOPY) -O binary --only-section=.irom2.text $< $(TARGET).irom2.bin
-	@$(OBJCOPY) -O binary --only-section=.drom0.data $< $(TARGET).drom0.bin
+
 
 $(TARGET).hex: $(TARGET).elf
 	@echo Creating HEX file \'$@\'...
 	@$(OBJCOPY) -O ihex --remove-section=.irom2.text --remove-section=.drom0.data $< $@
 	@$(OBJCOPY) -O ihex --only-section=.isr_vector --only-section=.text --only-section=.ARM --only-section=.iram0.text --only-section=.dram0.data --only-section=.data $< $(TARGET).flash.hex
-	@$(OBJCOPY) -O ihex --only-section=.irom2.text --only-section=.drom0.data $< $(TARGET).qspi.hex
 
 $(TARGET).elf: $(OBJECTS)
 	@echo ---------------------------------------------------------------------------
